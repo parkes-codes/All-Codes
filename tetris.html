@@ -1,0 +1,337 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 96vh;
+            font-family: Arial, sans-serif;
+            background: #003;
+            overflow: hidden;
+            margin-right: 210px;
+            transform: scale(0.9);
+        }
+
+
+        canvas {
+            background: #000;
+            border: 20px solid #fff;
+        }
+        #tetris {
+        margin-left: 220px;
+        }
+        .menuStyle {
+            color: #001;
+            background: #fafafa;
+            height: 50px;
+            width: 100px;
+            border: 10px solid #d0d0d0;
+            margin: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+
+        #next {
+            width: 200px;
+            height: 163px;
+            background: #fafafa;
+            border: 10px solid #d0d0d0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            margin-bottom: 400px;
+            margin-left: 20px;
+        }
+
+
+        #next-title {
+            font-size: 34px;
+            color: #001;
+            margin: 0px 0;
+            margin-top: 10px;
+            
+        }
+
+
+        #next-canvas {
+            width: 200px;
+            height 200px
+            margin-bottom: 200px;
+            border: 0px solid #d0d0d0;
+            transform: scale(.8)
+        }
+
+
+        .score-level-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+
+        .row-flex {
+            display: flex;
+            flex-direction: ;
+            justify-content: center;
+            align-items: center;
+        }
+        .column-flex {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        #level {
+          font-size: 23px;
+        }
+        #howTo {
+          position: absolute;
+          margin-top: 400px;
+          font-size: 19px;
+          font-weight: bold;
+          width: 200px;
+          height:150px;
+          background: #fafafa;
+          border: 10px solid #d0d0d0;
+          text-align: center;
+          line-height: 15px;
+        }
+    </style>
+</head>
+<body>
+      <div class="row-flex">
+        <div id="score" class="menuStyle"></div>
+        <div id="level" class="menuStyle"></div>
+      </div>
+      <div class="row-flex">
+        <canvas id="tetris" width="300" height="600"></canvas>
+        <div id="column-flex">
+          <div id="next" class= "menuStyle">
+          <div id="next-title">Next Piece</div>
+          <canvas id="next-canvas" width="120" height="60"></canvas>
+          <div id="howTo"> 
+          <p>Controls</p>
+          <p>↑ to rotate shape<p>
+          <p>← & → to move<p>
+          <p>↓ to drop shape</p>
+        </div>
+        </div>
+      </div>
+
+
+    <script>
+        const canvas = document.getElementById('tetris');
+        const ctx = canvas.getContext('2d');
+        ctx.scale(30, 30);
+        const nextCanvas = document.getElementById('next-canvas');
+        const nextCtx = nextCanvas.getContext('2d');
+        nextCtx.scale(30, 30);
+        const ROWS = 20, COLUMNS = 10;
+        const arena = Array.from({ length: ROWS }, () => Array(COLUMNS).fill(0));
+        const colors = ['#00FFFF', '#FFFF00', '#A000F0', '#00FF00', '#FF0000', '#3355FF', '#ff9130'];
+        let score = 0;
+        let linesCleared = 0;
+        let level = 1;
+
+
+        const pieces = [
+            { shape: [[1, 1, 1, 1]] }, // I
+            { shape: [[1, 1], [1, 1]] }, // O
+            { shape: [[0, 1, 0], [1, 1, 1]] }, // T
+            { shape: [[1, 1, 0], [0, 1, 1]] }, // S
+            { shape: [[0, 1, 1], [1, 1, 0]] }, // Z
+            { shape: [[1, 0, 0], [1, 1, 1]] }, // L
+            { shape: [[0, 0, 1], [1, 1, 1]] }  // J
+        ];
+
+
+        function collide(arena, player) {
+            return player.shape.some((row, y) => 
+                row.some((value, x) => value && (arena[y + player.y]?.[x + player.x] !== 0))
+            );
+        }
+        
+        function merge(arena, player) {
+            player.shape.forEach((row, y) => row.forEach((value, x) => {
+                if (value) arena[y + player.y][x + player.x] = player.color;
+            }));
+        }
+        
+        function rotate(matrix) {
+            return matrix[0].map((_, i) => matrix.map(row => row[i])).reverse();
+        }
+        
+        function clearLines() {
+            let lines = 0;
+            for (let y = arena.length - 1; y >= 0; y--) {
+                if (arena[y].every(value => value !== 0)) {
+                    arena.splice(y, 1);
+                    arena.unshift(Array(COLUMNS).fill(0));
+                    lines++;
+                    linesCleared++;
+                }
+            }
+
+
+            const scoreTable = [0, 40, 100, 300, 1200];
+            score += scoreTable[lines] * (level);
+
+
+            if (linesCleared >= (level) * 10) {
+                level++;
+            }
+        }
+
+
+        function updateBoard() {
+            document.getElementById('score').innerText = `Pts: ${score} `;
+            document.getElementById('level').innerText = `Level: ${level}`;
+            adjustFontSize(score);
+        }
+
+
+        function adjustFontSize(score) {
+            const scoreElement = document.getElementById('score');
+            if (score < 100) {
+                scoreElement.style.fontSize = '30px';
+            } else if (score < 1000) {
+                scoreElement.style.fontSize = '25px';
+            } else if (score < 10000) {
+                scoreElement.style.fontSize = '20px';
+            } else {
+                scoreElement.style.fontSize = '15px';
+            }
+        }
+
+
+        function createPiece() {
+            const piece = pieces[Math.floor(Math.random() * pieces.length)];
+            return { shape: piece.shape, color: colors[Math.floor(Math.random() * colors.length)], x: Math.floor(COLUMNS / 2) - Math.floor(piece.shape[0].length / 2), y: 0 };
+        }
+
+
+        let player = createPiece();
+        let nextPlayer = createPiece();
+        let dropCounter = 0, lastTime = 0;
+        let dropInterval = 1000;
+
+
+        function updateNext() {
+            nextCtx.fillStyle = "#fafafa"
+            nextCtx.clearRect(-5, -5, nextCanvas.width + 5, nextCanvas.height + 5);
+            nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+            nextPlayer.shape.forEach((row, y) => row.forEach((value, x) => {
+                if (value) {
+                    nextCtx.fillStyle = nextPlayer.color;
+                    nextCtx.fillRect(x, y, 1, 1);
+                    nextCtx.strokeStyle = '#222';
+                    nextCtx.lineWidth = 0.05;
+                    nextCtx.strokeRect(x, y, 1, 1);
+                }
+            }));
+        }
+
+
+        function update(time = 0) {
+            const deltaTime = time - lastTime;
+            lastTime = time;
+            dropCounter += deltaTime;
+            updateBoard();
+            updateNext();
+            
+            dropInterval = Math.max(1000 - level * 100, 100);
+
+
+            if (dropCounter > dropInterval) {
+                player.y++;
+                if (collide(arena, player)) {
+                    player.y--;
+                    merge(arena, player);
+                    clearLines();
+                    player = nextPlayer;
+                    nextPlayer = createPiece();
+                    if (collide(arena, player)) {
+                        alert(`Game Over! Final Score: ${score}`); 
+                        arena.forEach(row => row.fill(0));
+                        score = 0;
+                        linesCleared = 0;
+                        level = 1;
+                    }
+                }
+                dropCounter = 0;
+            }
+            
+            draw();
+            requestAnimationFrame(update);
+        }
+        
+        function draw() {
+            ctx.fillStyle = '#001';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            arena.forEach((row, y) => row.forEach((value, x) => {
+                if (value) {
+                    ctx.fillStyle = value;
+                    ctx.fillRect(x, y, 1, 1);
+                    ctx.strokeStyle = '#0';
+                    ctx.lineWidth = 0;
+                    ctx.strokeRect(x, y, 1, 1);
+                }
+            }));
+            player.shape.forEach((row, y) => row.forEach((value, x) => {
+                if (value) {
+                    ctx.fillStyle = player.color;
+                    ctx.fillRect(x + player.x, y + player.y, 1, 1);
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 0.05;
+                    ctx.strokeRect(x + player.x, y + player.y, 1, 1);
+                }
+            }));
+        }
+        
+        document.addEventListener('keydown', event => {
+            if (event.key === 'ArrowLeft' || event.key === 'a') {
+                player.x--;
+                if (collide(arena, player)) player.x++;
+            }
+            if (event.key === 'ArrowRight' || event.key === 'd') {
+                player.x++;
+                if (collide(arena, player)) player.x--;
+            }
+            if (event.key === 'ArrowDown' || event.key === 's') {
+                player.y++;
+                score++;
+                if (collide(arena, player)) {
+                    player.y--;
+                    merge(arena, player);
+                    clearLines();
+                    player = nextPlayer;
+                    nextPlayer = createPiece();
+                    if (collide(arena, player)) {
+                        alert(`Game Over! Final Score: ${score}`); 
+                        arena.forEach(row => row.fill(0));
+                        score = 0;
+                        linesCleared = 0;
+                        level = 1;
+                    }
+                }
+            }
+            if (event.key === 'ArrowUp' || event.key === 'w') {
+                const rotated = rotate(player.shape);
+                if (!collide(arena, { ...player, shape: rotated })) player.shape = rotated;
+            }
+        });
+        
+        update();
+    </script>
+</body>
+</html>
