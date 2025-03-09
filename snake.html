@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
@@ -111,15 +111,17 @@
         #scoreRow {
           margin-left: -125px;
         }
-        #sitOn {
-          width: 800px;
-          z-index: 1;
-          margin-top: 254px;
-          margin-right: 323px;
-          height: 800px;
-          position: absolute;
-          background-color: rgba(0,0,0,0%);
-        }
+         #sitOn {
+        width: 800px;
+        z-index: 1;
+        margin-top: 263px;
+        margin-right: 327px;
+        height: 801px;
+        position: absolute;
+        background-color: rgba(0,0,0,0%);
+        backdrop-filter: blur(0px); /* Apply blur effect */
+        pointer-events: none; /* Ensure clicks go through the overlay */
+    }
         #background {
           width: 250%;
           z-index: -2;
@@ -129,7 +131,6 @@
           position: absolute;
         }
         body.light-mode {
-
 
         }
         .light-mode .menuStyle {
@@ -177,6 +178,7 @@
                 <option value="title">SET WEBSITE TITLE!!!</option>
                 <option value="size">Set WHOLE Game Size (0-2.5)</option>
                 <option value="angle">Set Angle of Board</option>
+                <option value="blur">Set Blur of Board (0-500)</option>
             </select>
             <select id="gamemodeDropdown" class="menuStyle" onchange="setModes()">
                 <option value="i" disabled selected>Open Gamemodes menu</option>
@@ -215,9 +217,10 @@
         let answer = null;
         let snake, score, d, directionChanged, game;
         let aa, ab, ba, ac, ad, ae, af, ag;
-        let AA, AB, AC, AD, AE, AF, AG, AH, AI, AJ, AK, AL;
+        let AA, AB, AC, AD, AE, AF, AG, AH, AI, AJ, AK, AL, AM;
         
         let gameSpin = false;
+        let gameBlur = 0;
         let selfCollision = true;
         let edgeCollision = true;
         const wallsCollision = true;
@@ -260,14 +263,12 @@
           }
         }
 
-
         
         function drawCheckerboard(ctx, boxSize) {
     const lightColor1 = '#e0e0f1';
     const lightColor2 = '#d1d1e1';
     const darkColor1 = '#282835';
     const darkColor2 = '#303040';
-
 
     for (let x = 0; x < canvas.width; x += boxSize) {
         for (let y = 0; y < canvas.height; y += boxSize) {
@@ -287,16 +288,20 @@ function timer() {
     
 }
 function animate() {
-  if (milliseconds % 64 === 0) {
   if (gameSpin) {
     canvas.style.rotate = `${((Math.sin(milliseconds / 2000) * 180) + 180)}deg`
+    sitOn.style.rotate = `${((Math.sin(milliseconds / 2000) * 180) + 180)}deg`
     canvas.style.transform = `scale(0.7)`
+    sitOn.style.transform = `scale(0.7)`
   } else {
     canvas.style.rotate = `${gameAngle}deg`
+    sitOn.style.rotate = `${gameAngle}deg`
     if (gameAngle % 90 === 0) {
      canvas.style.transform = "scale(1)"
+    sitOn.style.transform = "scale(1)"
     } else {
       canvas.style.transform = "scale(.7)"
+      sitOn.style.transform = "scale(.7)"
     }
     if (isLightMode) {
       bg.style.background = `#fefeff 0px -40%`
@@ -305,7 +310,7 @@ function animate() {
   }
   }
 canvas.style.zIndex = "-1"
-}
+sitOn.style.backdropFilter = `blur(${gameBlur}px)`
 requestAnimationFrame(animate);
 }
         
@@ -325,7 +330,6 @@ function openFullscreen() {
     isLightMode = !isLightMode;
     draw();
 });
-
 
 document.addEventListener('keydown', function(event) {
     if (event.key === 'f') {
@@ -351,7 +355,6 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-
         function setModes() {
           const droopdown = document.getElementById('gamemodeDropdown')
           const optionPicked = droopdown.value
@@ -376,18 +379,15 @@ document.addEventListener('keydown', function(event) {
           updateGamemodeDisplay();
         }
 
-
 function isNum(input) {
   if (!(isNaN(input)) && (input !== "") && (input !== null) && (input - Math.ceil(input) === 0)) {
     return true
   } else { return false}
 }
 
-
         function setThings() {
     const settingsDropdown = document.getElementById('settingsDropdown');
     const selectedValue = settingsDropdown.value;
-
 
     if (selectedValue === "selfCollision") {
         selfCollision = !selfCollision;
@@ -449,12 +449,15 @@ function isNum(input) {
         AL = prompt("Choose a new value for the angle of the board.")
         if (isNum(AL)) {
           gameAngle = AL;
+    }}else if (selectedValue === "blur") {
+        AM = prompt("Choose a new value for the blur of the board.")
+        if (isNum(AM) && AM <= 100) {
+          gameBlur = AM;
     }}
     
     updateSettingsDisplay();
     settingsDropdown.selectedIndex = 0;
 }
-
 
         function updateSettingsDisplay() {
     const settingsDisplay = document.getElementById('settingsDisplay');
@@ -469,7 +472,6 @@ function isNum(input) {
         <p>Length Per food: ${lengthPerFood} </p>
     `;
 }
-
 
   function updateGamemodeDisplay() {
           if (wallsGameMode) {
@@ -559,12 +561,10 @@ function updateLocationDisplay() {
         spawnFood(i);
     }
 
-
             document.addEventListener('keydown', startMoving);
             game = setInterval(draw, speed);
             updateLocationDisplay();
         }
-
 
         function startMoving(event) {
             canMove = true;
@@ -574,7 +574,6 @@ function updateLocationDisplay() {
             openFullscreen();
             }
         }
-
 
         function spawnFood(index) {
     let newFood;
@@ -589,7 +588,6 @@ function updateLocationDisplay() {
             x: Math.floor(Math.random() * (canvas.width / box)) * box,
             y: Math.floor(Math.random() * (canvas.height / box)) * box
         };
-
 
         for (let segment of snake) {
             if (Math.round(newFood.x) === Math.round(segment.x) && Math.round(newFood.y) === Math.round(segment.y)) {
@@ -606,7 +604,6 @@ function updateLocationDisplay() {
             }
         }
 
-
         for (let foodItem of food) {
             if (newFood.x === foodItem.x && newFood.y === foodItem.y) {
                 isValidPosition = false;
@@ -615,12 +612,10 @@ function updateLocationDisplay() {
             }
         }
 
-
         if (full >= (area)) {
           isValidPosition = true;
           completelyFull = true;
         }
-
 
     } while (!isValidPosition);
     if (completelyFull === false) {
@@ -631,12 +626,9 @@ function updateLocationDisplay() {
 }
 
 
-
-
         function spawnWall() {
     let newWall;
     let isValidPosition;
-
 
     do {
         isValidPosition = true;
@@ -645,14 +637,11 @@ function updateLocationDisplay() {
             y: Math.floor(Math.random() * (canvas.height / box)) * box
         };
 
-
         const snakeHead = snake[0];
-
 
         if (Math.abs(newWall.x - snakeHead.x) <= box * 3 && Math.abs(newWall.y - snakeHead.y) <= box * 3) {
             isValidPosition = false;
         }
-
 
         for (let segment of snake) {
             if (newWall.x === segment.x && newWall.y === segment.y) {
@@ -660,7 +649,6 @@ function updateLocationDisplay() {
                 break;
             }
         }
-
 
         if (isValidPosition) {
             for (let wall of walls) {
@@ -670,7 +658,6 @@ function updateLocationDisplay() {
                 }
             }
         }
-
 
         if (isValidPosition) {
             if (newWall.x === food.x && newWall.y === food.y) {
@@ -688,13 +675,10 @@ function updateLocationDisplay() {
         }
     } while (!isValidPosition);
 
-
     walls.push(newWall);
 }
 
-
         let canChangeDirection = true;
-
 
 function direction(event) {
     const newDirection = event.keyCode;
@@ -709,10 +693,8 @@ function direction(event) {
         83: 'DOWN'
     };
 
-
     if (directionMap[newDirection] && canChangeDirection) {
         const newDirectionValue = directionMap[newDirection];
-
 
         if ((d === 'LEFT' && newDirectionValue === 'RIGHT') ||
             (d === 'RIGHT' && newDirectionValue === 'LEFT') ||
@@ -721,16 +703,13 @@ function direction(event) {
             return;
         }
 
-
         
         d = newDirectionValue;
-
 
         
         canChangeDirection = false;
     }
 }
-
 
 function screenWrapp() {
   if (screenWrap) {
@@ -749,7 +728,6 @@ function screenWrapp() {
         }}
   }
 }
-
 
         function draw() {
     drawCheckerboard(ctx, box);
@@ -775,12 +753,10 @@ function screenWrapp() {
         ctx.fillRect(snake[i].x, snake[i].y, box, box);
     }
 
-
     ctx.fillStyle = '#FF1111';
     food.forEach(foodItem => {
         ctx.fillRect(foodItem.x, foodItem.y, box, box);
     });
-
 
     if (wallsGameMode) {
         ctx.fillStyle = '#445568';
@@ -788,7 +764,6 @@ function screenWrapp() {
             ctx.fillRect(wall.x, wall.y, box, box);
         }
     }
-
 
     if (canMove) {
         let snakeX = snake[0].x;
@@ -800,8 +775,6 @@ function screenWrapp() {
                   game = setInterval(draw, speed);
                   updateSettingsDisplay();
                 }
-
-
 
 
         
@@ -820,7 +793,6 @@ function screenWrapp() {
                 break;
         }
         
-
 
         updateLocationDisplay();
         
@@ -844,22 +816,18 @@ function screenWrapp() {
                 }
                 scoreDisplay.textContent = 'Score: ' + score;
 
-
                 if (score !== 0 && wallsGameMode) {
                     spawnWall();
                 }
             }
         }
 
-
         
         if (!infiniteLengthMode) {
             snake.pop();
         }
 
-
         const newHead = { x: snakeX, y: snakeY };
-
 
         
         if (edgeCollision) {
@@ -869,12 +837,10 @@ function screenWrapp() {
             }
         }
 
-
         if (selfCollision) {
     let visibleSegments = snake.slice(1).filter(segment => {
         return !(cheeseMode && ((Math.round(segment.x / box) + Math.round(segment.y / box)) % 2 === 1));
     });
-
 
     if (collision(newHead, visibleSegments)) {
         clearInterval(game);
@@ -886,18 +852,15 @@ function screenWrapp() {
             gameOver();
         }
 
-
         snake.unshift(newHead);
         screenWrapp();
         checkWinCondition();
-
 
         
         canChangeDirection = true;
     }
 }
         
-
 
         function collision(head, array) {
     return array.some(segment => {
@@ -908,20 +871,16 @@ function screenWrapp() {
 }
 
 
-
-
         function checkWinCondition() {
             if (score + 3 >= area || (snake.length >= area) && infiniteLengthMode && selfCollision && (score >= 5)) {
                 clearInterval(game);
                 winMessage.style.display = "block";
-
 
                 setTimeout(() => {
                     initGame();
                 }, 1000);
             }
         }
-
 
         function gameOver() {
             setTimeout(() => {
@@ -930,12 +889,10 @@ function screenWrapp() {
             }, 1000);
         }
 
-
 window.addEventListener('beforeunload', function (event) {
     event.preventDefault(); // Standard for most browsers
     event.returnValue = 'You have unsaved changes. Are you sure you want to leave?'; // For older browsers
 });
-
 
         initGame(); // hey if you read this, go to scratch.mit.edu/users/sadie_is_awesome to see even more amazing stuff!
         animate();
