@@ -1,0 +1,945 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Snake</title>
+    <link rel="icon" href="icon.icon">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 70vh;
+            font-family: sans-serif;
+            background: #000;
+            overflow: hidden;
+            
+        }
+        canvas {
+            border: 17px solid #FFF;
+        }
+        #score {
+            font-size: 60px;
+            align-self: center;
+            height:70px;
+            width:300px;
+            border-width: 10px;
+        }
+        #winMessage {
+            position: absolute;
+            color: #0;
+            display: none;
+            font-size: 200px;
+            color: #fff;
+            margin-top: 420px;
+            
+        }
+        .menuStyle {
+            color: #FFF;
+            height: 60px;
+            width: 400px;
+            font-size: 33px;
+            text-align: center;
+            background-color: #222222;
+            margin: 12px;
+            border: 7px solid #FFF;
+            font-family: Tahoma;
+        }
+        #settingsDisplay {
+            height: 5000px;
+            width: 270px;
+            font-size: 30px;
+            line-height: 28px;
+            margin-left: -0px;
+            margin-top: 5px;
+        }
+        #gameModeDisplay {
+          height: 300px;
+          width: 270px;
+          font-size: 28px;
+          margin-top: 0px;
+          margin-left: -1px;
+        }
+        .row-flex {
+            display: flex;
+            align-items: center;
+        }
+        .column-flex {
+            display: flex;
+            flex-direction: column;
+            align-items:center;
+        }
+        #menuNote {
+          color: #FFF;
+          font-size:24px;
+          text-align: center;
+          width: 530px;
+        }
+        #snakeLocation {
+          width: 270px;
+          line-height: 60px;
+          font-size: 28px;
+          margin-left: 0px;
+          margin-top: 30px;
+        }
+        #mainCollumn {
+          height: 800px;
+        }
+        #infoCollumn {
+          height:500px;
+          margin-left: 30px;
+          margin-top: -105px;
+        }
+        #modeSwitch {
+          width: 125px;
+          height: 70px;
+          font-size: 31px;
+          cursor: pointer;
+        }
+        #toggleImage {
+          
+        }
+        #gamemodeDropdown {
+          cursor: pointer;
+        }
+        #settingsDropdown {
+          cursor: pointer;
+        }
+        #scoreRow {
+          margin-left: -125px;
+        }
+        #sitOn {
+          width: 800px;
+          z-index: 1;
+          margin-top: 254px;
+          margin-right: 323px;
+          height: 800px;
+          position: absolute;
+          background-color: rgba(0,0,0,0%);
+        }
+        #background {
+          width: 250%;
+          z-index: -2;
+          margin-top: 0px;
+          margin-right: 0px;
+          height:  400%;
+          position: absolute;
+        }
+        body.light-mode {
+
+
+        }
+        .light-mode .menuStyle {
+          border-color: #000;
+          background-color: #ebebf0;
+          color: #000;
+        }
+        body.light-mode canvas {
+          border-color: #000;
+        }
+        body.light-mode #menuNote {
+          color: #000;
+        }
+        .hidden {
+          display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="background"></div>
+    <div id="sitOn"></div>
+    <div class="row-flex">
+        <div id= "mainCollumn" class="column-flex">
+            <div id="scoreRow" class="row-flex">
+              <button id="modeSwitch" class="menuStyle">☀️/🌙</button>
+              <div id="score" class="menuStyle"></div>
+            </div>
+            <canvas id="gameCanvas" width='800' height='800'></canvas>
+            <div id="winMessage">You Win!</div>
+            <div class="row-flex">
+            <select id="settingsDropdown" class="menuStyle" onchange="setThings()">
+                <option value="o" disabled selected>Open Settings Menu</option>
+                <option value="selfCollision">Toggle Body-Collision</option>
+                <option value="edgeCollision">Toggle Border Collision</option>
+                <option value="screenWrap">Toggle Edge Warping</option>
+                <option value="mpf">Set Millisecs Per Frame</option>
+                <option value="snakeHue">Set Snake Color</option>
+                <option value="satu">Set Snake Saturation</option>
+                <option value="brig">Set Snake Brightness</option>
+                <option value="opacc">Set Snake Transparency</option>
+                <option value="colorEffect">Set Color Effect Intensity</option>
+                <option value="box">Set Arena Size (resets settings :/)</option>
+                <option value="foodAm">Set Food Amount</option>
+                <option value="lengthFood">Set Length Gain Per Food</option>
+                <option value="title">SET WEBSITE TITLE!!!</option>
+                <option value="size">Set WHOLE Game Size (0-2.5)</option>
+                <option value="angle">Set Angle of Board</option>
+            </select>
+            <select id="gamemodeDropdown" class="menuStyle" onchange="setModes()">
+                <option value="i" disabled selected>Open Gamemodes menu</option>
+                <option value="walls">Toggle Walls Game Mode</option>
+                <option value="infinite">Toggle Infinite Length Mode</option>
+                <option value="cheese">Toggle Cheese Mode</option>
+                <option value="speedUp">Toggle Speed Up Per 🍎 Mode</option>
+                <option value="speedUpTwo">Toggle Speed Up Per FRAME Mode</option>
+                <option value="freeplay">Toggle FreePlay Mode</option>
+                <option value="spin">Toggle Board Spin Mode</option>
+            </select>
+            </div>
+            <div id="menuNote" class="switch">
+                remember to click on the arena after selecting an
+                option, or your arrow keys will continue to use the menu.
+                also press f to hide everything on screen.
+            </div>
+        </div>
+        <div id= "infoCollumn" class="column-flex">
+            <div id="snakeLocation" class="menuStyle"></div>
+            <div id="settingsDisplay" class="menuStyle"></div>
+            <div id="gameModeDisplay" class="menuStyle"></div>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+        const winMessage = document.getElementById('winMessage');
+        const bg = document.getElementById('background');
+        
+        let canMove = false;
+        let walls = [];
+        let snakeExWife = 0;
+        let snakeWhy = 0;
+        let answer = null;
+        let snake, score, d, directionChanged, game;
+        let aa, ab, ba, ac, ad, ae, af, ag;
+        let AA, AB, AC, AD, AE, AF, AG, AH, AI, AJ, AK, AL;
+        
+        let gameSpin = false;
+        let selfCollision = true;
+        let edgeCollision = true;
+        const wallsCollision = true;
+        let speed = 100;
+        let foodAmount = 1;
+        const speedGainedPerFood = 2;
+        let cheeseMode = false;
+        let doFullscreen = false;
+        let snakeHue = 180;
+        let snakeOpacity = 100;
+        let screenWrap = true;
+        let box = 67;
+        let food = [];
+        let area = 100;
+        let baseSpeed = 100;
+        let otherBox = Math.round(800 / box);
+        document.title = localStorage.getItem('title');
+        if (document.title === "null") {
+          document.title = "Home | Schoology";
+        }
+        let snakeSaturation = 100;
+        let snakeBrightness = 50;
+        let SCCEintensity = 13;
+        let gameAngle = 360;
+        let infiniteLengthMode = false;
+        let wallsGameMode = false;
+        let speedUpGameMode = false;
+        let speedUpTwoMode = false;
+        let freePlayMode = false;
+        let isLightMode = false;
+        let lengthPerFood = 1;
+        const sizeTwo = localStorage.getItem('size')
+        if (sizeTwo !== null) {
+          document.body.style.transform = `scale(${sizeTwo})`
+        } else {
+          if (window.location.href.includes("onecompiler")) {
+            document.body.style.transform = "scale(0.5)"
+          } else {
+            document.body.style.transform = "scale(0.6)"
+          }
+        }
+
+
+        
+        function drawCheckerboard(ctx, boxSize) {
+    const lightColor1 = '#e0e0f1';
+    const lightColor2 = '#d1d1e1';
+    const darkColor1 = '#282835';
+    const darkColor2 = '#303040';
+
+
+    for (let x = 0; x < canvas.width; x += boxSize) {
+        for (let y = 0; y < canvas.height; y += boxSize) {
+            if (Math.round(x / boxSize + y / boxSize) % 2 === 0) {
+                ctx.fillStyle = isLightMode ? lightColor1 : darkColor1;
+            } else {
+                ctx.fillStyle = isLightMode ? lightColor2 : darkColor2;
+            }
+            ctx.fillRect(x, y, boxSize, boxSize);
+        }
+    }
+}
+let milliseconds = 0
+function timer() {
+    milliseconds += 16;
+    requestAnimationFrame(timer);
+    
+}
+function animate() {
+  if (milliseconds % 64 === 0) {
+  if (gameSpin) {
+    canvas.style.rotate = `${((Math.sin(milliseconds / 2000) * 180) + 180)}deg`
+    canvas.style.transform = `scale(0.7)`
+  } else {
+    canvas.style.rotate = `${gameAngle}deg`
+    if (gameAngle % 90 === 0) {
+     canvas.style.transform = "scale(1)"
+    } else {
+      canvas.style.transform = "scale(.7)"
+    }
+    if (isLightMode) {
+      bg.style.background = `#fefeff 0px -40%`
+    } else {
+      bg.style.background = `#001 0px -40%`
+  }
+  }
+canvas.style.zIndex = "-1"
+}
+requestAnimationFrame(animate);
+}
+        
+var elem = document.documentElement;
+// stolen straight from w3 schools
+function openFullscreen() {
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.webkitRequestFullscreen) {
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) {
+    elem.msRequestFullscreen();
+  }
+}
+        document.getElementById('modeSwitch').addEventListener('click', function() {
+    document.body.classList.toggle('light-mode');
+    isLightMode = !isLightMode;
+    draw();
+});
+
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'f') {
+        const imgUrl = 'decoy.jpeg';
+        const isBackgroundSet = document.body.style.backgroundImage === `url("${imgUrl}")`;
+        
+        if (isBackgroundSet) {
+            document.body.style.backgroundImage = '';
+            const elementsToShow = document.querySelectorAll('#mainCollumn, #infoCollumn, #score, #winMessage, #toggleImage, #settingsDisplay, #gameModeDisplay, #snakeLocation, #settingsDropdown, #gamemodeDropdown');
+            elementsToShow.forEach(element => {
+                element.classList.remove('hidden');
+            });
+        } else {
+            document.body.style.backgroundImage = `url("${imgUrl}")`;
+            document.body.style.backgroundSize = "cover";
+            document.body.style.backgroundRepeat = "no-repeat";
+            
+            const elementsToHide = document.querySelectorAll('#mainCollumn, #infoCollumn, #score, #winMessage, #toggleImage, #settingsDisplay, #gameModeDisplay, #snakeLocation, #settingsDropdown, #gamemodeDropdown');
+            elementsToHide.forEach(element => {
+                element.classList.add('hidden');
+            });
+        }
+    }
+});
+
+
+        function setModes() {
+          const droopdown = document.getElementById('gamemodeDropdown')
+          const optionPicked = droopdown.value
+          
+          if (optionPicked === "walls") {
+            wallsGameMode = !wallsGameMode
+          } else if (optionPicked === "infinite") {
+            infiniteLengthMode = !infiniteLengthMode
+          } else if (optionPicked === "speedUp") {
+            speedUpGameMode = !speedUpGameMode
+          } else if (optionPicked === "speedUpTwo") {
+            speedUpTwoMode = !speedUpTwoMode
+          } else if (optionPicked === "freeplay") {
+            freePlayMode = !freePlayMode
+          } else if (optionPicked === "cheese") {
+            cheeseMode = !cheeseMode
+          } else if (optionPicked === "spin") {
+            gameSpin = !gameSpin; milliseconds = 3000;
+          }
+          
+          droopdown.selectedIndex = 0;
+          updateGamemodeDisplay();
+        }
+
+
+function isNum(input) {
+  if (!(isNaN(input)) && (input !== "") && (input !== null) && (input - Math.ceil(input) === 0)) {
+    return true
+  } else { return false}
+}
+
+
+        function setThings() {
+    const settingsDropdown = document.getElementById('settingsDropdown');
+    const selectedValue = settingsDropdown.value;
+
+
+    if (selectedValue === "selfCollision") {
+        selfCollision = !selfCollision;
+    } else if (selectedValue === "edgeCollision") {
+        edgeCollision = !edgeCollision;
+    } else if (selectedValue === "mpf") {
+        AA = prompt("Choose a new value to be the milliseconds per frame.");
+        if (isNum(AA)) {
+            baseSpeed = AA;
+            initGame();
+    }}else if (selectedValue === "snakeHue") {
+        AB = prompt("Choose a new value to be the snake hue (0-360)");
+        if (isNum(AB)) {
+            snakeHue = Number(AB);
+    }}else if (selectedValue === "colorEffect") {
+        AC = prompt("Choose a new value for the color effect intensity.");
+        if (isNum(AC)) {
+            SCCEintensity = AC;
+    }}else if (selectedValue === "box") {
+        AD = prompt("Choose a new value for dimensions of arena (0-750)");
+        if (isNum(AD) && (AD <= 750)) {
+            box = parseInt(AD);
+            localStorage.setItem('box', box);
+            location.reload();
+    }}else if (selectedValue === "satu") {
+        AE = prompt("Choose a value for the new snake saturation.")
+        if (isNum(AE)) {
+          snakeSaturation = AE
+    }}else if (selectedValue === "foodAm") {
+        AF = prompt("Choose a value for the new snake food amount.")
+        if (isNum(AF) && (AF <= area)) {
+          foodAmount = AF;
+          initGame();
+    }}else if (selectedValue === "screenWrap") {
+        if (true) {screenWrap = !screenWrap
+    }}else if (selectedValue === "lengthFood") {
+        AG = prompt("Choose a value for the new snake length gain.")
+        if (isNum(AG)) {
+          lengthPerFood = AG;
+    }}else if (selectedValue === "title") {
+        AH = prompt("WHAT IS THE NEW PAGE TITLE")
+          if ((AH !== "") && (AH !== null)) {
+          document.title = AH;
+        localStorage.setItem('title', AH);
+    }}else if (selectedValue === "size") {
+        AI = prompt("Choose a value for the new size. Note that the recommended size is one, and that the size is stored on your computer and is the same whenever you open this.") - .3
+        if (!(isNaN(AI)) && (AI !== "") && (AI !== null) && (AI <= 2.5)) {
+          localStorage.setItem('size', AI);
+          document.body.style.transform = `scale(${AI})`
+    }}else if (selectedValue === "brig") {
+        AJ = prompt("Choose a new value for the snake brightness.")
+        if (isNum(AJ)) {
+          snakeBrightness = AJ;
+    }}else if (selectedValue === "opacc") {
+        AK = prompt("Choose a new value for the snake transparency.")
+        if (isNum(AK)) {
+          snakeOpacity = AK;
+    }}else if (selectedValue === "angle") {
+        AL = prompt("Choose a new value for the angle of the board.")
+        if (isNum(AL)) {
+          gameAngle = AL;
+    }}
+    
+    updateSettingsDisplay();
+    settingsDropdown.selectedIndex = 0;
+}
+
+
+        function updateSettingsDisplay() {
+    const settingsDisplay = document.getElementById('settingsDisplay');
+    settingsDisplay.innerHTML = `
+        <p>Body Collision: ${selfCollision}</p>
+        <p>Border Collision: ${edgeCollision}</p>
+        <p>Milliseconds Per Frame: ${speed}</p>
+        <p>Edge Warping: ${screenWrap} </p>
+        <p>Snake Hue: ${snakeHue}</p>
+        <p>Color Effect Intensity: ${SCCEintensity}</p>
+        <p>Arena Dimensions: ${otherBox} x ${otherBox}</p>
+        <p>Length Per food: ${lengthPerFood} </p>
+    `;
+}
+
+
+  function updateGamemodeDisplay() {
+          if (wallsGameMode) {
+            aa = "Walls Game Mode"
+          } else {
+            aa = "" }
+          if (infiniteLengthMode) {
+            ab = "Infinite Length"
+          } else {
+            ab = ""}
+          if (speedUpGameMode) {
+            ac = "SpeedUp Per Food"
+          } else {
+            ac = ""}
+          if (speedUpTwoMode) {
+            ad = "SpeedUp Per Frame"
+          } else {
+            ad = "" }
+          if (freePlayMode) {
+            ae = "Free Play Mode"
+          } else {
+            ae = "" }
+          if (cheeseMode) {
+            af = "Cheese Mode"
+          } else {
+            af = "" }
+          if (gameSpin) {
+            ag = "Board Spin"
+          } else {
+            ag = ""
+          }
+          
+          if (!aa && !ab && !ac && !ad && !ae && !af && !ag) {
+            ba = "No Modes Active"
+          } else {
+            ba = "Game Modes Active ⬇ "
+          }
+          const displayThing = document.getElementById('gameModeDisplay')
+          displayThing.innerHTML = `
+          <p> ${ba}</p>
+          <p> ${aa} </p>
+          <p> ${ab} </p>
+          <p> ${ac} </p>
+          <p> ${ad} </p>
+          <p> ${ae} </p>
+          <p> ${af} </p>
+          <p> ${ag} </p>
+          `;
+        }
+        
+function updateLocationDisplay() {
+    snakeExWife = Math.round(snake[0].x / box) + 1
+    snakeWhy = Math.round(snake[0].y / box) + 1
+    const locationDisplay = document.getElementById('snakeLocation');
+    snakeLocation.innerHTML = `
+        Snake Pos:
+        ${snakeExWife}  ${snakeWhy}
+    `;}
+        function initGame() {
+            const savedBox = localStorage.getItem('box');
+            if (savedBox) {
+              box = parseInt(savedBox);
+              box = 800 / box
+              otherBox = (Math.round((800 / box) * 100)) / 100;
+              area = otherBox * otherBox
+           }
+            clearInterval(game)
+            updateSettingsDisplay();
+            updateGamemodeDisplay();
+            walls = [];
+            food = [];
+            
+            speed = baseSpeed
+            winMessage.style.display = "none";
+            canMove = false;
+            document.removeEventListener('keydown', direction);
+            snake = [
+                { x: box * 2, y: box * 0 },
+                { x: box * 1, y: box * 0 },
+                { x: box * 0, y: box * 0 }
+            ];
+            score = 0;
+            d = 'RIGHT';
+            directionChanged = true;
+            scoreDisplay.textContent = 'Score: ' + score;
+          for (let i = 0; i < foodAmount; i++) {
+        spawnFood(i);
+    }
+
+
+            document.addEventListener('keydown', startMoving);
+            game = setInterval(draw, speed);
+            updateLocationDisplay();
+        }
+
+
+        function startMoving(event) {
+            canMove = true;
+            document.removeEventListener('keydown', startMoving);
+            document.addEventListener('keydown', direction);
+            if (doFullscreen) {
+            openFullscreen();
+            }
+        }
+
+
+        function spawnFood(index) {
+    let newFood;
+    let isValidPosition;
+    let full = 0;
+    let completelyFull = false;
+    
+    
+    do {
+        isValidPosition = true;
+        newFood = {
+            x: Math.floor(Math.random() * (canvas.width / box)) * box,
+            y: Math.floor(Math.random() * (canvas.height / box)) * box
+        };
+
+
+        for (let segment of snake) {
+            if (Math.round(newFood.x) === Math.round(segment.x) && Math.round(newFood.y) === Math.round(segment.y)) {
+                isValidPosition = false;
+                full++;
+                break;
+            }
+        }
+        for (let wall of walls) {
+            if (newFood.x === wall.x && newFood.y === wall.y) {
+                isValidPosition = false;
+                full++;
+                break;
+            }
+        }
+
+
+        for (let foodItem of food) {
+            if (newFood.x === foodItem.x && newFood.y === foodItem.y) {
+                isValidPosition = false;
+                full++;
+                break;
+            }
+        }
+
+
+        if (full >= (area)) {
+          isValidPosition = true;
+          completelyFull = true;
+        }
+
+
+    } while (!isValidPosition);
+    if (completelyFull === false) {
+    food[index] = newFood;
+} else {
+  food[index] = 0;
+}
+}
+
+
+
+
+        function spawnWall() {
+    let newWall;
+    let isValidPosition;
+
+
+    do {
+        isValidPosition = true;
+        newWall = {
+            x: Math.floor(Math.random() * (canvas.width / box)) * box,
+            y: Math.floor(Math.random() * (canvas.height / box)) * box
+        };
+
+
+        const snakeHead = snake[0];
+
+
+        if (Math.abs(newWall.x - snakeHead.x) <= box * 3 && Math.abs(newWall.y - snakeHead.y) <= box * 3) {
+            isValidPosition = false;
+        }
+
+
+        for (let segment of snake) {
+            if (newWall.x === segment.x && newWall.y === segment.y) {
+                isValidPosition = false;
+                break;
+            }
+        }
+
+
+        if (isValidPosition) {
+            for (let wall of walls) {
+                if (newWall.x === wall.x && newWall.y === wall.y) {
+                    isValidPosition = false;
+                    break;
+                }
+            }
+        }
+
+
+        if (isValidPosition) {
+            if (newWall.x === food.x && newWall.y === food.y) {
+                isValidPosition = false;
+                break;
+            }
+        }
+        if (isValidPosition) {
+        for (let wall of walls) {
+            if (Math.abs(newWall.x - wall.x) <= box && Math.abs(newWall.y - wall.y) <= box) {
+                isValidPosition = false;
+                break;
+            }
+        }
+        }
+    } while (!isValidPosition);
+
+
+    walls.push(newWall);
+}
+
+
+        let canChangeDirection = true;
+
+
+function direction(event) {
+    const newDirection = event.keyCode;
+    const directionMap = {
+        37: 'LEFT',
+        38: 'UP',
+        39: 'RIGHT',
+        40: 'DOWN',
+        65: 'LEFT',
+        87: 'UP',
+        68: 'RIGHT',
+        83: 'DOWN'
+    };
+
+
+    if (directionMap[newDirection] && canChangeDirection) {
+        const newDirectionValue = directionMap[newDirection];
+
+
+        if ((d === 'LEFT' && newDirectionValue === 'RIGHT') ||
+            (d === 'RIGHT' && newDirectionValue === 'LEFT') ||
+            (d === 'UP' && newDirectionValue === 'DOWN') ||
+            (d === 'DOWN' && newDirectionValue === 'UP')) {
+            return;
+        }
+
+
+        
+        d = newDirectionValue;
+
+
+        
+        canChangeDirection = false;
+    }
+}
+
+
+function screenWrapp() {
+  if (screenWrap) {
+    for (let i = snake.length - 1; i >= 0; i--) {
+        if (Math.round(snake[i].x / box) >= otherBox) {
+          snake[i].x = 0
+        }
+        if (Math.round(snake[i].x) / box <= -1) {
+          snake[i].x = otherBox * box - box;
+        }
+        if (Math.round(snake[i].y / box) >= otherBox) {
+          snake[i].y = 0
+        }
+        if (Math.round(snake[i].y / box) <= -1) {
+          snake[i].y = otherBox * box - box;
+        }}
+  }
+}
+
+
+        function draw() {
+    drawCheckerboard(ctx, box);
+    for (let i = snake.length - 1; i >= 0; i--) {
+        let hue;
+        let segment = snake[i];
+        
+        if (!infiniteLengthMode) {
+          hue = snakeHue + ((i * SCCEintensity * 3.6) / ((snake.length - 1)))
+        } else {
+          hue = snakeHue + i * 5;
+        }
+        const sat = snakeSaturation + '%';
+        const light = snakeBrightness + '%';
+        const opac = snakeOpacity + '%';
+        
+        if (!(i === 0 || i === snake.length - 1)) {
+        if (cheeseMode && (Math.round(segment.x / box) + Math.round(segment.y / box)) % 2 === 1) {
+            continue;
+        }
+    }
+        ctx.fillStyle = `hsla(${hue}, ${sat}, ${light}, ${opac} )`;
+        ctx.fillRect(snake[i].x, snake[i].y, box, box);
+    }
+
+
+    ctx.fillStyle = '#FF1111';
+    food.forEach(foodItem => {
+        ctx.fillRect(foodItem.x, foodItem.y, box, box);
+    });
+
+
+    if (wallsGameMode) {
+        ctx.fillStyle = '#445568';
+        for (let wall of walls) {
+            ctx.fillRect(wall.x, wall.y, box, box);
+        }
+    }
+
+
+    if (canMove) {
+        let snakeX = snake[0].x;
+        let snakeY = snake[0].y;
+        
+        if (speedUpTwoMode) {
+                  speed = Math.round((speed / (1 + speed / 30000)) * 1000) / 1000
+                  clearInterval(game);
+                  game = setInterval(draw, speed);
+                  updateSettingsDisplay();
+                }
+
+
+
+
+        
+        switch (d) {
+            case 'LEFT':
+                snakeX -= box;
+                break;
+            case 'UP':
+                snakeY -= box;
+                break;
+            case 'RIGHT':
+                snakeX += box;
+                break;
+            case 'DOWN':
+                snakeY += box;
+                break;
+        }
+        
+
+
+        updateLocationDisplay();
+        
+        for (let i = 0; i < food.length; i++) {
+            if (Math.round(snakeX) === Math.round(food[i].x) && Math.round(snakeY) === Math.round(food[i].y)) {
+                score++;
+                if (!freePlayMode && !infiniteLengthMode) {
+                  for (let x = 0; x < lengthPerFood; x++) {
+                    snake.push(i);
+                    if ((lengthPerFood % 2 === 1) && (cheeseMode)) {
+                      snake.push(i);
+                    }
+                  }
+                }
+                spawnFood(i);
+                if (speedUpGameMode) {
+                    speed = (Math.round((speed * 0.95) * 100)) / 100;
+                    clearInterval(game);
+                    game = setInterval(draw, speed);
+                    updateSettingsDisplay();
+                }
+                scoreDisplay.textContent = 'Score: ' + score;
+
+
+                if (score !== 0 && wallsGameMode) {
+                    spawnWall();
+                }
+            }
+        }
+
+
+        
+        if (!infiniteLengthMode) {
+            snake.pop();
+        }
+
+
+        const newHead = { x: snakeX, y: snakeY };
+
+
+        
+        if (edgeCollision) {
+            if (Math.round(snakeX) < 0 || Math.round(snakeY) < 0 || Math.round(snakeX) >= canvas.width || Math.round(snakeY) >= canvas.height) {
+                clearInterval(game);
+                gameOver();
+            }
+        }
+
+
+        if (selfCollision) {
+    let visibleSegments = snake.slice(1).filter(segment => {
+        return !(cheeseMode && ((Math.round(segment.x / box) + Math.round(segment.y / box)) % 2 === 1));
+    });
+
+
+    if (collision(newHead, visibleSegments)) {
+        clearInterval(game);
+        gameOver();
+    }
+}
+        if (wallsGameMode && collision(newHead, walls) && wallsCollision) {
+            clearInterval(game);
+            gameOver();
+        }
+
+
+        snake.unshift(newHead);
+        screenWrapp();
+        checkWinCondition();
+
+
+        
+        canChangeDirection = true;
+    }
+}
+        
+
+
+        function collision(head, array) {
+    return array.some(segment => {
+        let isInvisible = cheeseMode && ((Math.round(segment.x / box) + Math.round(segment.y / box)) % 2 === 1);
+        if (isInvisible) return false;
+        return Math.round(head.x) === Math.round(segment.x) && Math.round(head.y) === Math.round(segment.y);
+    });
+}
+
+
+
+
+        function checkWinCondition() {
+            if (score + 3 >= area || (snake.length >= area) && infiniteLengthMode && selfCollision && (score >= 5)) {
+                clearInterval(game);
+                winMessage.style.display = "block";
+
+
+                setTimeout(() => {
+                    initGame();
+                }, 1000);
+            }
+        }
+
+
+        function gameOver() {
+            setTimeout(() => {
+                speed = baseSpeed;
+                initGame();
+            }, 1000);
+        }
+
+
+window.addEventListener('beforeunload', function (event) {
+    event.preventDefault(); // Standard for most browsers
+    event.returnValue = 'You have unsaved changes. Are you sure you want to leave?'; // For older browsers
+});
+
+
+        initGame(); // hey if you read this, go to scratch.mit.edu/users/sadie_is_awesome to see even more amazing stuff!
+        animate();
+        timer();
+    </script>
+</body>
+</html>
